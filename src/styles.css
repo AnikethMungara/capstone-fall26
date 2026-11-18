@@ -56,3 +56,18 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .freetext:focus { outline:none; border-color:var(--accent); }
 .counter { text-align:right; }
 .quote { margin-top:6px; font-style:italic; color:var(--muted); white-space:pre-wrap; }
+.journey { margin-top:10px; padding:10px 14px; border-radius:10px; border:1px solid var(--accent); background:var(--accent); font-weight:600; }
+details.phases summary { cursor:pointer; margin-top:6px; }
+.respondent code { background:var(--panel); padding:1px 6px; border-radius:6px; }
+.compare-row { display:flex; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+.toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0 20px; }
+.toolbar select, .toolbar button { padding:8px 12px; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; font:inherit; }
+.chart { margin:0 0 28px; padding:16px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+.chart svg { width:100%; height:auto; }
+.legend { display:flex; gap:16px; justify-content:center; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; }
+@media (max-width:520px) {
+  .shell { padding:16px 12px 48px; }
+  .scale { gap:8px; } .dot { width:44px; height:44px; }
+  .actions button { flex:1; }
+}

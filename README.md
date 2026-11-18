@@ -27,3 +27,13 @@ GameObject with an `OnSurveyEvent(string json)` method.
 Unity -> React: `window.MentaMorphSurvey.start("m2", "pre")` opens a module survey (`pre`, `post` or `followup`); `.reset()` returns to the menu.
 
 Ways to host it: embed the `dist/` build in a Unity WebGL template, or a WebView plugin on mobile/desktop.
+
+## Full flow (sprint 5)
+Before-quiz survey -> quiz -> after-quiz survey -> results -> feedback, all under one respondent ID.
+- `src/respondent.js`: anonymous UUID in localStorage, kept until the flow finishes (#96).
+- `src/records.js`: one record per answer (`respondentId, surveyType, moduleId, questionId, conceptId, answer, timestamp`),
+  upserted so there are no duplicates, saved as each answer is given, exportable as CSV/JSON. Set `VITE_SUBMIT_URL` to POST
+  each submitted survey to a backend (#80).
+- `src/data/surveys.js`: before/after confidence items (same ids both times so they can be paired).
+- `src/components/Dashboard.jsx`: before-vs-after charts (n shown, "indicative" under 30); tick *Demo data* to preview.
+- `docs/gap-list.md`: draft gap list for #78/#98.

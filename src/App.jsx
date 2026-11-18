@@ -1,31 +1,47 @@
 import { useCallback, useEffect, useState } from "react";
 import { modules, phases, getQuestions } from "./data/modules.js";
 import { getFeedbackQuestions } from "./data/feedback.js";
+import { getSurveyItems, surveyLabels } from "./data/surveys.js";
 import { scoreAttempt, isCorrect, isGraded } from "./scoring.js";
+import { getRespondentId, peekRespondentId, clearRespondent } from "./respondent.js";
+import { saveAnswer, getAnswersFor, getRecords, submitRecords } from "./records.js";
 import { sendToUnity } from "./bridge/unityBridge.js";
 import ModuleSelect from "./components/ModuleSelect.jsx";
 import Question from "./components/Question.jsx";
 import Results from "./components/Results.jsx";
+import JourneyResults from "./components/JourneyResults.jsx";
+import Dashboard from "./components/Dashboard.jsx";
 
-// screen: "select" | "survey" | "results"
+// Questions for a survey type. before/after = confidence surveys, quiz = the
+// graded knowledge check, feedback = qualitative, pre/post/followup = the
+// parallel graded forms A/B/C kept for standalone testing.
+function buildQuestions(mod, type) {
+  if (type === "before" || type === "after") return getSurveyItems(mod);
+  if (type === "quiz") return getQuestions(mod, "A").filter((q) => q.type !== "scale");
+  if (type === "feedback") return getFeedbackQuestions(mod);
+  return getQuestions(mod, phases[type].form);
+}
+
+// screen: "select" | "survey" | "results" | "journeyResults" | "dashboard"
 export default function App() {
   const [screen, setScreen] = useState("select");
-  const [run, setRun] = useState(null); // { moduleId, phase, questions }
+  const [run, setRun] = useState(null); // { moduleId, type, journey, questions, respondentId }
   const [answers, setAnswers] = useState({});
   const [index, setIndex] = useState(0);
-  // attempts[moduleId][phase] = scoreAttempt() result
-  const [attempts, setAttempts] = useState({});
+  const [attempts, setAttempts] = useState({}); // attempts[moduleId][type] = scoreAttempt()
+  const [respondent, setRespondent] = useState(peekRespondentId());
 
-  const start = useCallback((moduleId, phase) => {
+  const begin = useCallback((moduleId, type, journey = false) => {
     const mod = modules.find((m) => m.id === moduleId);
-    if (!mod || !phases[phase]) return;
-    const form = phases[phase].form;
-    const questions = phases[phase].kind === "feedback" ? getFeedbackQuestions(mod) : getQuestions(mod, form);
-    setRun({ moduleId, phase, form, questions });
-    setAnswers({});
+    if (!mod || !surveyLabels[type]) return;
+    const respondentId = getRespondentId();
+    setRespondent(respondentId);
+    // Prefill from storage so a refresh keeps earlier answers.
+    setAnswers(getAnswersFor(respondentId, type, moduleId));
+    setRun({ moduleId, type, journey, respondentId, questions: buildQuestions(mod, type) });
     setIndex(0);
     setScreen("survey");
-    sendToUnity("survey_started", { moduleId, phase, form });
+    sendToUnity("survey_started", { moduleId, surveyType: type, respondentId, journey });
   }, []);
 
   const reset = useCallback(() => {
@@ -33,30 +49,58 @@ export default function App() {
     setRun(null);
   }, []);
 
-  // Let the game drive the shell: window.MentaMorphSurvey.start("m2", "pre")
+  const newRespondent = () => {
+    clearRespondent();
+    setRespondent(null);
+  };
+
+  // Let the game drive the shell.
   useEffect(() => {
-    window.MentaMorphSurvey = { start, reset };
+    window.MentaMorphSurvey = {
+      start: (moduleId, type = "before") => begin(moduleId, type),
+      startJourney: (moduleId) => begin(moduleId, "before", true),
+      reset,
+    };
     return () => delete window.MentaMorphSurvey;
-  }, [start, reset]);
+  }, [begin, reset]);
 
   const handleAnswer = (q, value) => {
     setAnswers((prev) => ({ ...prev, [q.id]: value }));
+    saveAnswer({
+      respondentId: run.respondentId, surveyType: run.type, moduleId: run.moduleId,
+      questionId: q.id, conceptId: q.conceptId, answer: value,
+    });
     sendToUnity("answer", {
-      moduleId: run.moduleId, phase: run.phase, form: run.form,
+      respondentId: run.respondentId, moduleId: run.moduleId, surveyType: run.type,
       questionId: q.id, conceptId: q.conceptId, value,
       correct: isGraded(q) ? isCorrect(q, value) : null,
     });
   };
 
-  const next = () => {
+  const next = async () => {
     if (index < run.questions.length - 1) return setIndex(index + 1);
+
     const result = scoreAttempt(run.questions, answers);
-    setAttempts((a) => ({ ...a, [run.moduleId]: { ...a[run.moduleId], [run.phase]: result } }));
-    setScreen("results");
+    setAttempts((a) => ({ ...a, [run.moduleId]: { ...a[run.moduleId], [run.type]: result } }));
+    const mine = getRecords().filter(
+      (r) => r.respondentId === run.respondentId && r.surveyType === run.type && r.moduleId === run.moduleId,
+    );
+    await submitRecords(mine);
     sendToUnity("survey_completed", {
-      moduleId: run.moduleId, phase: run.phase, form: run.form,
-      correct: result.correct, total: result.total, scaleAvg: result.scaleAvg, answers,
+      respondentId: run.respondentId, moduleId: run.moduleId, surveyType: run.type,
+      correct: result.correct, total: result.total, scaleAvg: result.scaleAvg,
     });
+
+    if (!run.journey) return setScreen("results");
+    // Full flow: before -> quiz -> after -> (results unlocked) -> feedback.
+    if (run.type === "before") return begin(run.moduleId, "quiz", true);
+    if (run.type === "quiz") return begin(run.moduleId, "after", true);
+    if (run.type === "after") return setScreen("journeyResults");
+    if (run.type === "feedback") {
+      clearRespondent();
+      setRespondent(null);
+      setScreen("results");
+    }
   };
 
   const mod = run && modules.find((m) => m.id === run.moduleId);
@@ -69,12 +113,18 @@ export default function App() {
         <span className="tag">Survey prototype · not final</span>
       </header>
 
-      {screen === "select" && <ModuleSelect modules={modules} phases={phases} attempts={attempts} onPick={start} />}
+      {screen === "select" && (
+        <ModuleSelect
+          modules={modules} phases={phases} attempts={attempts} respondent={respondent}
+          onPick={(id, type) => begin(id, type)} onJourney={(id) => begin(id, "before", true)}
+          onNewRespondent={newRespondent} onDashboard={() => setScreen("dashboard")}
+        />
+      )}
       {screen === "survey" && (
         <Question
-          key={q.id}
+          key={`${run.type}-${q.id}`}
           module={mod}
-          phase={phases[run.phase]}
+          phase={{ label: surveyLabels[run.type] }}
           question={q}
           index={index}
           total={run.questions.length}
@@ -86,14 +136,17 @@ export default function App() {
       )}
       {screen === "results" && (
         <Results
-          module={mod}
-          phases={phases}
-          phase={run.phase}
-          attempts={attempts[mod.id]}
-          onRetry={() => start(mod.id, run.phase)}
-          onDone={reset}
+          module={mod} phases={phases} phase={run.type} attempts={attempts[mod.id]}
+          onRetry={() => begin(mod.id, run.type, run.journey)} onDone={reset}
         />
       )}
+      {screen === "journeyResults" && (
+        <JourneyResults
+          module={mod} attempts={attempts[mod.id]}
+          onFeedback={() => begin(mod.id, "feedback", true)} onDone={reset}
+        />
+      )}
+      {screen === "dashboard" && <Dashboard modules={modules} onBack={reset} />}
     </main>
   );
 }

@@ -1,10 +1,17 @@
-export default function ModuleSelect({ modules, phases, attempts, onPick }) {
+export default function ModuleSelect({ modules, phases, attempts, respondent, onPick, onJourney, onNewRespondent, onDashboard }) {
   return (
     <section>
-      <h1>Choose a module</h1>
+      <div className="row">
+        <h1>Choose a module</h1>
+        <button className="link" onClick={onDashboard}>Results dashboard →</button>
+      </div>
       <p className="muted">
-        Take the pre-survey, play the module (in the real game), then take the post-survey.
-        Each stage uses a different form of the questions.
+        Full flow: before-quiz survey → quiz → after-quiz survey → results → feedback.
+        All stages share one respondent ID.
+      </p>
+      <p className="muted respondent">
+        Respondent: {respondent ? <code>{respondent.slice(0, 8)}…</code> : "none yet (created when a flow starts)"}
+        {respondent && <button className="link" onClick={onNewRespondent}> · new respondent</button>}
       </p>
       <div className="grid">
         {modules.map((m, i) => {
@@ -14,14 +21,16 @@ export default function ModuleSelect({ modules, phases, attempts, onPick }) {
               <span className="icon">{m.icon}</span>
               <strong>Module {i + 1}: {m.title}</strong>
               <span className="muted">{m.blurb}</span>
-              <div className="phases">
+              <button className="journey" onClick={() => onJourney(m.id)}>▶ Start full flow</button>
+              <details className="phases">
+                <summary className="muted">Individual surveys (testing)</summary>
                 {Object.entries(phases).map(([key, p]) => (
                   <button key={key} className={done[key] ? "phase done" : "phase"} onClick={() => onPick(m.id, key)}>
                     <span>{p.label} {p.form && <small>(Form {p.form})</small>}</span>
                     {done[key] && <span className="badge">{p.kind === "feedback" ? "✓ sent" : `${done[key].correct}/${done[key].total}`}</span>}
                   </button>
                 ))}
-              </div>
+              </details>
             </div>
           );
         })}
