@@ -17,8 +17,8 @@ export default function ModuleSelect({ modules, phases, attempts, onPick }) {
               <div className="phases">
                 {Object.entries(phases).map(([key, p]) => (
                   <button key={key} className={done[key] ? "phase done" : "phase"} onClick={() => onPick(m.id, key)}>
-                    <span>{p.label} <small>(Form {p.form})</small></span>
-                    {done[key] && <span className="badge">{done[key].correct}/{done[key].total}</span>}
+                    <span>{p.label} {p.form && <small>(Form {p.form})</small>}</span>
+                    {done[key] && <span className="badge">{p.kind === "feedback" ? "✓ sent" : `${done[key].correct}/${done[key].total}`}</span>}
                   </button>
                 ))}
               </div>

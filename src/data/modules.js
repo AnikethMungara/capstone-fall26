@@ -15,6 +15,7 @@ export const phases = {
   pre: { label: "Pre-survey", form: "A", blurb: "Before the module" },
   post: { label: "Post-survey", form: "B", blurb: "After the module" },
   followup: { label: "Follow-up", form: "C", blurb: "Weeks later" },
+  feedback: { label: "Feedback", form: null, kind: "feedback", blurb: "Qualitative: tags + text" },
 };
 
 const s = (text, options, answer, explanation) => ({ text, options, answer, explanation });

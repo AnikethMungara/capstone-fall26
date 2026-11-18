@@ -1,3 +1,5 @@
+import { MAX_TEXT } from "../data/feedback.js";
+
 // Assessment-style question: no right/wrong reveal while taking pre/post
 // surveys; answers are reviewed on the results screen.
 export default function Question({ module, phase, question: q, index, total, response, onAnswer, onNext, onExit }) {
@@ -11,7 +13,11 @@ export default function Question({ module, phase, question: q, index, total, res
   };
 
   const selected = (i) => (q.type === "multi" ? response?.includes(i) : response === i);
-  const hasAnswer = q.type === "multi" ? response?.length > 0 : response !== undefined;
+  const tagText = response ?? { tags: [], text: "" };
+  const toggleTag = (tag) =>
+    onAnswer({ ...tagText, tags: tagText.tags.includes(tag) ? tagText.tags.filter((x) => x !== tag) : [...tagText.tags, tag] });
+  // Feedback is optional: tag+text prompts can be skipped.
+  const hasAnswer = q.type === "tagtext" ? true : q.type === "multi" ? response?.length > 0 : response !== undefined;
 
   return (
     <section>
@@ -24,7 +30,21 @@ export default function Question({ module, phase, question: q, index, total, res
       <h2>{q.text}</h2>
       {q.type === "multi" && <p className="muted">Select all that apply.</p>}
 
-      {q.type === "scale" ? (
+      {q.type === "tagtext" ? (
+        <div>
+          <p className="muted">Pick any tags that fit, then add details if you like. Both are optional.</p>
+          <div className="tags">
+            {q.tags.map((tag) => (
+              <button key={tag} className={tagText.tags.includes(tag) ? "tag-chip on" : "tag-chip"} onClick={() => toggleTag(tag)}>{tag}</button>
+            ))}
+          </div>
+          <textarea
+            className="freetext" rows={5} maxLength={MAX_TEXT} placeholder={q.placeholder}
+            value={tagText.text} onChange={(e) => onAnswer({ ...tagText, text: e.target.value })}
+          />
+          <div className="counter muted">{tagText.text.length}/{MAX_TEXT}</div>
+        </div>
+      ) : q.type === "scale" ? (
         <div>
           <div className="scale">
             {[1, 2, 3, 4, 5].map((n) => (

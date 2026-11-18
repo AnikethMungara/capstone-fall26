@@ -1,3 +1,5 @@
+export const isGraded = (q) => q.type !== "scale" && q.type !== "tagtext";
+
 export function isCorrect(q, value) {
   if (value === undefined) return false;
   if (q.type === "multi") {
@@ -11,7 +13,7 @@ export function scoreAttempt(questions, answers) {
   const items = questions.map((q) => ({
     question: q,
     response: answers[q.id],
-    correct: q.type === "scale" ? null : isCorrect(q, answers[q.id]),
+    correct: isGraded(q) ? isCorrect(q, answers[q.id]) : null,
   }));
   const graded = items.filter((i) => i.correct !== null);
   const scales = items.filter((i) => i.question.type === "scale" && i.response !== undefined);

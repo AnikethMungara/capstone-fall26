@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { modules, phases, getQuestions } from "./data/modules.js";
-import { scoreAttempt, isCorrect } from "./scoring.js";
+import { getFeedbackQuestions } from "./data/feedback.js";
+import { scoreAttempt, isCorrect, isGraded } from "./scoring.js";
 import { sendToUnity } from "./bridge/unityBridge.js";
 import ModuleSelect from "./components/ModuleSelect.jsx";
 import Question from "./components/Question.jsx";
@@ -19,7 +20,8 @@ export default function App() {
     const mod = modules.find((m) => m.id === moduleId);
     if (!mod || !phases[phase]) return;
     const form = phases[phase].form;
-    setRun({ moduleId, phase, form, questions: getQuestions(mod, form) });
+    const questions = phases[phase].kind === "feedback" ? getFeedbackQuestions(mod) : getQuestions(mod, form);
+    setRun({ moduleId, phase, form, questions });
     setAnswers({});
     setIndex(0);
     setScreen("survey");
@@ -42,7 +44,7 @@ export default function App() {
     sendToUnity("answer", {
       moduleId: run.moduleId, phase: run.phase, form: run.form,
       questionId: q.id, conceptId: q.conceptId, value,
-      correct: q.type === "scale" ? null : isCorrect(q, value),
+      correct: isGraded(q) ? isCorrect(q, value) : null,
     });
   };
 
