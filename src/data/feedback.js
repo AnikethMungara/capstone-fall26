@@ -3,6 +3,8 @@
 // hand-coding every response. Draft wording: review with the team / Product Owner.
 
 export const MAX_TEXT = 500;
+export const RATING_MIN = 1;
+export const RATING_MAX = 5;
 
 export const feedbackPrompts = [
   {
@@ -34,6 +36,12 @@ export const feedbackPrompts = [
     text: "What would you change or add to the experience?",
     tags: ["Content", "Visuals", "Length", "Difficulty", "Feedback/hints", "Nothing"],
     placeholder: "Your suggestion…",
+  },
+  {
+    id: "overall", type: "ratingtext",
+    text: "Overall, how useful was this module?",
+    scaleLabels: ["Not useful", "Very useful"],
+    placeholder: "What made you pick that number?",
   },
 ];
 

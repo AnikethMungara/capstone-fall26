@@ -1,4 +1,4 @@
-export const isGraded = (q) => q.type !== "scale" && q.type !== "tagtext";
+export const isGraded = (q) => !["scale", "tagtext", "ratingtext"].includes(q.type);
 
 export function isCorrect(q, value) {
   if (value === undefined) return false;

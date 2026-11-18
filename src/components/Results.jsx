@@ -56,6 +56,7 @@ function FeedbackDone({ module, cur, onDone }) {
   const rows = cur.items.map((i) => ({
     questionId: i.question.id,
     prompt: i.question.text,
+    rating: i.response?.rating ?? null,
     tags: i.response?.tags ?? [],
     text: i.response?.text ?? "",
   }));
@@ -77,7 +78,8 @@ function FeedbackDone({ module, cur, onDone }) {
         {rows.map((r) => (
           <div key={r.questionId} className="feedback ok">
             <strong>{r.prompt}</strong>
-            <div className="tags">{r.tags.length ? r.tags.map((t) => <span key={t} className="tag-chip on static">{t}</span>) : <span className="muted">No tags</span>}</div>
+            {r.rating !== null && <div className="tags"><span className="tag-chip on static">Rating: {r.rating}/5</span></div>}
+            {r.rating === null && <div className="tags">{r.tags.length ? r.tags.map((t) => <span key={t} className="tag-chip on static">{t}</span>) : <span className="muted">No tags</span>}</div>}
             {r.text && <div className="quote">“{r.text}”</div>}
           </div>
         ))}
