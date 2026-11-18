@@ -82,10 +82,9 @@ export default function App() {
 
     const result = scoreAttempt(run.questions, answers);
     setAttempts((a) => ({ ...a, [run.moduleId]: { ...a[run.moduleId], [run.type]: result } }));
-    const mine = getRecords().filter(
-      (r) => r.respondentId === run.respondentId && r.surveyType === run.type && r.moduleId === run.moduleId,
-    );
-    await submitRecords(mine);
+    // Send everything this respondent has answered so far; the server upserts, so
+    // anything that failed to send earlier is retried here.
+    await submitRecords(getRecords().filter((r) => r.respondentId === run.respondentId));
     sendToUnity("survey_completed", {
       respondentId: run.respondentId, moduleId: run.moduleId, surveyType: run.type,
       correct: result.correct, total: result.total, scaleAvg: result.scaleAvg,

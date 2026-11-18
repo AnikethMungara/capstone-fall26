@@ -43,3 +43,23 @@ Before-quiz survey -> quiz -> after-quiz survey -> results -> feedback, all unde
 Covers data integrity, scoring, records/respondent ID/export, every question component, the 30-render
 type-switch check, the full before -> quiz -> after -> feedback flow (10 runs), after-quiz submit edge cases,
 Unity entry points and the dashboard charts. Layout at real mobile widths is CSS and is not covered; check it by eye.
+
+## Backend (saves responses to CSV)
+Zero-dependency Node server in `server/`. Run it alongside the UI (two terminals):
+
+    npm run server     # http://localhost:3001 -> server/data/responses.csv
+    npm run dev        # Vite proxies /api to the server; .env.development sets VITE_SUBMIT_URL=/api/responses
+
+| Route | |
+|---|---|
+| `POST /api/responses` | one record or an array; upserts into the CSV (no duplicates), returns `{saved, rejected, total}` |
+| `GET /api/responses.csv` | download the CSV |
+| `GET /api/responses` | all rows as JSON |
+| `GET /api/health` | `{ok, rows}` |
+
+Columns: `respondentId, surveyType, moduleId, questionId, conceptId, answer, rating, tags, text, timestamp, receivedAt`
+(multi-select answers are `0;2;3`, feedback tags are `Pacing;Wording`). Env: `PORT`, `DATA_FILE`, `CORS_ORIGIN`,
+`API_KEY` (if set, the two GET data routes need an `x-api-key` header; POST stays open so students can submit).
+Cells starting with `= + - @` are prefixed with `'` so free text can't run as a spreadsheet formula.
+If the server is down the student is not blocked: answers stay in localStorage and are re-sent on the next submit.
+`server/data/` is git-ignored because it holds respondent answers.

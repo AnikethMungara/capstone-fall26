@@ -14,7 +14,7 @@ class MemoryStorage {
   clear() { this.#d.clear(); }
 }
 const storage = new MemoryStorage();
-for (const target of [globalThis, window]) {
+for (const target of typeof window === "undefined" ? [globalThis] : [globalThis, window]) {
   Object.defineProperty(target, "localStorage", { value: storage, configurable: true, writable: true });
 }
 

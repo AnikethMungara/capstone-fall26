@@ -55,15 +55,22 @@ export function downloadFile(name, text, mime) {
   a.click();
 }
 
-// Sends a survey's records to a backend when VITE_SUBMIT_URL is set; otherwise
-// they simply stay in localStorage (the interim CSV/JSON export source).
+// Sends records to the backend when VITE_SUBMIT_URL is set (e.g. "/api/responses");
+// otherwise they stay in localStorage. Never throws: a down server must not block
+// the student, and the server upserts, so unsent records are simply re-sent with
+// the next submission.
 export async function submitRecords(records) {
   const url = import.meta.env.VITE_SUBMIT_URL;
   if (!url) return { ok: true, local: true };
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(records),
-  });
-  return { ok: res.ok, local: false };
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(records),
+    });
+    return { ok: res.ok, local: false };
+  } catch (err) {
+    console.warn("[submitRecords] backend unreachable; answers kept locally", err);
+    return { ok: false, local: false, error: String(err) };
+  }
 }
