@@ -37,3 +37,9 @@ Before-quiz survey -> quiz -> after-quiz survey -> results -> feedback, all unde
 - `src/data/surveys.js`: before/after confidence items (same ids both times so they can be paired).
 - `src/components/Dashboard.jsx`: before-vs-after charts (n shown, "indicative" under 30); tick *Demo data* to preview.
 - `docs/gap-list.md`: draft gap list for #78/#98.
+
+## Tests
+    npm test            # 124 tests, Vitest + Testing Library (jsdom)
+Covers data integrity, scoring, records/respondent ID/export, every question component, the 30-render
+type-switch check, the full before -> quiz -> after -> feedback flow (10 runs), after-quiz submit edge cases,
+Unity entry points and the dashboard charts. Layout at real mobile widths is CSS and is not covered; check it by eye.
