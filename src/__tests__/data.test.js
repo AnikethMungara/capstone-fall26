@@ -51,18 +51,13 @@ describe("module question banks", () => {
     }
   });
 
-  it("the three forms of a concept differ in content (stem + options), so pre/post aren't identical", () => {
-    // Multi-select stems are a shared instruction ("Select all that apply"), so compare stem AND options.
+  it("the three forms of every concept have different stems (and different options)", () => {
     for (const m of modules) for (const c of m.concepts) {
-      const sig = FORMS.map((f) => JSON.stringify([c.forms[f].text, c.forms[f].options ?? c.forms[f].scaleLabels]));
-      expect(new Set(sig).size, `${m.id}.${c.id}`).toBe(3);
-    }
-  });
-
-  it("single-answer and scale stems are worded differently in every form", () => {
-    for (const m of modules) for (const c of m.concepts) {
-      if (c.type === "multi") continue;
-      expect(new Set(FORMS.map((f) => c.forms[f].text)).size, `${m.id}.${c.id}`).toBe(3);
+      expect(new Set(FORMS.map((f) => c.forms[f].text)).size, `${m.id}.${c.id} stems`).toBe(3);
+      const sig = FORMS.map((f) => JSON.stringify(c.forms[f].options ?? c.forms[f].scaleLabels));
+      // m4.real is a more/same/less question: the options ARE the answer scale, so only its scenario changes.
+      const fixedScale = `${m.id}.${c.id}` === "m4.real";
+      if (c.type !== "scale" && !fixedScale) expect(new Set(sig).size, `${m.id}.${c.id} options`).toBe(3);
     }
   });
 
