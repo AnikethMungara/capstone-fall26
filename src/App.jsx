@@ -10,6 +10,7 @@ import ModuleSelect from "./components/ModuleSelect.jsx";
 import Question from "./components/Question.jsx";
 import Results from "./components/Results.jsx";
 import JourneyResults from "./components/JourneyResults.jsx";
+import Completion from "./components/Completion.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 
 // Questions for a survey type. before/after = confidence surveys, quiz = the
@@ -22,7 +23,7 @@ function buildQuestions(mod, type) {
   return getQuestions(mod, phases[type].form);
 }
 
-// screen: "select" | "survey" | "results" | "journeyResults" | "dashboard"
+// screen: "select" | "survey" | "results" | "journeyResults" | "complete" | "dashboard"
 export default function App() {
   const [screen, setScreen] = useState("select");
   const [run, setRun] = useState(null); // { moduleId, type, journey, questions, respondentId }
@@ -79,26 +80,24 @@ export default function App() {
 
   const next = async () => {
     if (index < run.questions.length - 1) return setIndex(index + 1);
-
     const result = scoreAttempt(run.questions, answers);
     setAttempts((a) => ({ ...a, [run.moduleId]: { ...a[run.moduleId], [run.type]: result } }));
-    // Send everything this respondent has answered so far; the server upserts, so
-    // anything that failed to send earlier is retried here.
+    // Send all responses for this respondent; if the backend is down, the
+    // records stay saved in localStorage and can be retried on a later submit.
     await submitRecords(getRecords().filter((r) => r.respondentId === run.respondentId));
     sendToUnity("survey_completed", {
       respondentId: run.respondentId, moduleId: run.moduleId, surveyType: run.type,
       correct: result.correct, total: result.total, scaleAvg: result.scaleAvg,
     });
-
     if (!run.journey) return setScreen("results");
-    // Full flow: before -> quiz -> after -> (results unlocked) -> feedback.
+    // Full flow: before -> quiz -> after -> results -> feedback -> completion.
     if (run.type === "before") return begin(run.moduleId, "quiz", true);
     if (run.type === "quiz") return begin(run.moduleId, "after", true);
     if (run.type === "after") return setScreen("journeyResults");
     if (run.type === "feedback") {
       clearRespondent();
       setRespondent(null);
-      setScreen("results");
+      setScreen("complete");
     }
   };
 
@@ -111,7 +110,6 @@ export default function App() {
         <span className="brand">MentaMorph</span>
         <span className="tag">Survey prototype · not final</span>
       </header>
-
       {screen === "select" && (
         <ModuleSelect
           modules={modules} phases={phases} attempts={attempts} respondent={respondent}
@@ -130,6 +128,7 @@ export default function App() {
           response={answers[q.id]}
           onAnswer={(v) => handleAnswer(q, v)}
           onNext={next}
+          onBack={() => setIndex((current) => Math.max(0, current - 1))}
           onExit={reset}
         />
       )}
@@ -145,6 +144,7 @@ export default function App() {
           onFeedback={() => begin(mod.id, "feedback", true)} onDone={reset}
         />
       )}
+      {screen === "complete" && <Completion module={mod} onDone={reset} />}
       {screen === "dashboard" && <Dashboard modules={modules} onBack={reset} />}
     </main>
   );
