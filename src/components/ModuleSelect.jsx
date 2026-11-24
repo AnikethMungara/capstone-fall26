@@ -1,3 +1,55 @@
+function ModuleIcon({ moduleId }) {
+  const iconPaths = {
+    m1: (
+      <>
+        <rect x="3" y="6" width="18" height="14" rx="2.5" />
+        <path d="M3 9V6a2 2 0 0 1 2-2h13" />
+        <path d="M16 12h5v5h-5a2.5 2.5 0 0 1 0-5Z" />
+        <circle cx="16.8" cy="14.5" r="0.75" fill="currentColor" stroke="none" />
+      </>
+    ),
+    m2: (
+      <>
+        <path d="M3 20h18" />
+        <path d="M4 17l6-6 4 3 6-8" />
+        <path d="M15.5 6H20v4.5" />
+      </>
+    ),
+    m3: (
+      <>
+        <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+        <path d="M2.5 10h19" />
+        <path d="M7 15h4" />
+      </>
+    ),
+    m4: (
+      <>
+        <path d="M12 3 3 8h18L12 3Z" />
+        <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" />
+        <path d="M3 21h18M4 18h16" />
+      </>
+    ),
+  };
+
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ display: "block", color: "var(--accent, #a57ae8)" }}
+      aria-hidden="true"
+      focusable="false"
+    >
+      {iconPaths[moduleId] ?? <circle cx="12" cy="12" r="8" />}
+    </svg>
+  );
+}
+
 export default function ModuleSelect({ modules, phases, attempts, respondent, onPick, onJourney, onNewRespondent, onDashboard }) {
   return (
     <section className="module-screen">
@@ -31,7 +83,7 @@ export default function ModuleSelect({ modules, phases, attempts, respondent, on
           return (
             <article key={m.id} className="card module-card">
               <div className="card-topline">
-                <span className="icon">{m.icon}</span>
+                <span className="icon" aria-hidden="true"><ModuleIcon moduleId={m.id} /></span>
                 <span className="module-number">MODULE {String(i + 1).padStart(2, "0")}</span>
               </div>
               <h3>Module {i + 1}: {m.title}</h3>
