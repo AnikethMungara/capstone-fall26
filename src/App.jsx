@@ -107,7 +107,9 @@ export default function App() {
   return (
     <main className="shell">
       <header className="topbar">
-        <span className="brand">MentaMorph</span>
+      <div className="brand">
+        <img src="/mentamorph-logo.png" alt="MentaMorph" />
+      </div>
         <span className="tag">Survey prototype · not final</span>
       </header>
       {screen === "select" && (

@@ -42,10 +42,10 @@ p { margin: 0; }
   gap: 18px; border-bottom: 1px solid rgba(151, 181, 233, .13);
 }
 .brand { display: inline-flex; align-items: center; gap: 11px; font-size: 20px; font-weight: 800; letter-spacing: -.035em; }
-.brand::before {
-  content: "✦"; display: grid; place-items: center; width: 37px; height: 37px;
-  border-radius: 11px; background: linear-gradient(145deg, #669bff, #6b6cef);
-  box-shadow: 0 7px 25px rgba(70, 104, 240, .25); color: white; font-size: 21px;
+.brand img {
+  height: 60px;
+  width: auto;
+  display: block;
 }
 .tag { border: 1px solid #33527e; background: rgba(52, 86, 150, .17); color: #bfd5ff; padding: 7px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .muted { color: var(--muted); font-size: 14px; }
@@ -266,3 +266,130 @@ details.phases summary { color: #a9c3ec; font-size: 13px; font-weight: 600; curs
   .results-actions button { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .question-card, .results-screen { animation: none; } }
+
+
+/* Theme */
+
+   :root {
+    --bg: #101820;
+    --panel: #202833;
+    --panel-soft: #26303b;
+    --line: #3c4653;
+    --text: #f2f4f8;
+    --muted: #b1becb;
+    --accent: #a57ae8;
+    --accent-strong: #7839d1;
+    --ok: #53bb59;
+  }
+  
+  body {
+    background:
+      radial-gradient(ellipse 72% 33% at 50% -5%, rgba(120, 57, 209, .11), transparent 77%),
+      linear-gradient(180deg, #161e26 0%, #101820 70%);
+  }
+  button:focus-visible, select:focus-visible,
+  textarea:focus-visible, summary:focus-visible {
+    outline-color: #b28af2;
+  }
+  .topbar { border-bottom-color: #3d4550; }
+  .tag { border-color: #58466e; background: #2a2337; color: #dfcafa; }
+  .eyebrow, .link { color: #c3a2fb; }
+  
+  /* Home, module cards and navigation */
+  .module-hero {
+    border-color: #524363;
+    background: linear-gradient(116deg, #292637 0%, #222830 55%, #1c242c 100%);
+  }
+  .module-hero::after { border-color: rgba(170, 129, 238, .14); }
+  .module-hero > p { color: #c6d0da; }
+  .flow-step { border-color: #4f465f; background: rgba(28, 28, 38, .5); }
+  .flow-step b, .flow-arrow { color: #bc95f6; }
+  .dashboard-link { background: #292e38; border-color: #67507b; color: #ebddfc; }
+  .dashboard-link:hover { background: #343443; border-color: #a57ae8; }
+  .card { background: linear-gradient(160deg, #242d36, #1d252e); border-color: #414b57; }
+  .card:hover { border-color: #986bdb; }
+  .card .icon { background: #343142; border-color: #554466; }
+  .module-number { color: #b9aacd; }
+  .journey, .actions .primary {
+    background: linear-gradient(120deg, #8748db, #6c31ba);
+    border-color: #b38af1;
+    box-shadow: 0 8px 22px rgba(88, 43, 147, .18);
+  }
+  details.phases summary { color: #c4b4dd; }
+  .phase { background: #1c242c; border-color: #45505d; }
+  .phase.done { border-color: #43844e; }
+  .badge { background: #1e3c2c; color: #92e29b; }
+  .respondent-bar { background: #1c242d; border-color: #424c58; }
+  .respondent code { background: #303743; color: #eee4fb; }
+  .status-indicator { background: #53bb59; }
+  
+  /* Question screen: preserve layout, interactions and animations */
+  .question-card { background: linear-gradient(160deg, #242e38, #1c252d); border-color: #444b5a; }
+  .question-count { color: #d3dbe5; }
+  .progress { background: #3a414a; }
+  .progress > div { background: linear-gradient(90deg, #7839d1, #aa7ae7); }
+  .option { background: #202832; border-color: #48515c; }
+  .option:hover { background: #2a2d39; border-color: #ae82eb; }
+  .option.selected {
+    background: linear-gradient(100deg, #3a2b52, #30273f);
+    border-color: #ae80eb;
+    box-shadow: inset 0 0 0 1px rgba(174, 128, 235, .14);
+  }
+  .option .mark { background: #323944; }
+  .option.selected .mark { background: #5a3d7d; color: #eddbff; }
+  .option.selected::after { background: #aa7be8; color: #181023; }
+  .option.correct { border-color: #53bb59; background: #203d2b; }
+  .dot { background: #252e39; border-color: #4e5763; }
+  .dot:hover, .dot:not(:disabled):hover { background: #353043; border-color: #b58cf0; }
+  .dot.selected { background: #7839d1; border-color: #c39efa; box-shadow: 0 7px 18px rgba(114, 51, 190, .25); outline-color: rgba(174, 128, 235, .4); }
+  .actions { border-top-color: #414956; }
+  .actions button { background: #2a323d; border-color: #515c6b; }
+  .question-footnote { color: #acb7c7; }
+  
+  /* Feedback and general results */
+  .compare, .review, .chart { background: #202833; border-color: #424b57; }
+  .feedback { background: #29333d; border-color: #4b5865; }
+  .compare-row { background: #28313b; border-color: #4a5461; }
+  .tag-chip { background: #28313d; border-color: #515d6a; }
+  .tag-chip.on { background: #49316a; border-color: #b68cf1; }
+  .freetext { background: #1c242c; border-color: #566170; }
+  .toolbar select, .toolbar button { background: #29313c; border-color: #535f6c; }
+  .results-hero {
+    border-color: #51465f;
+    background: radial-gradient(ellipse 70% 95% at 0% 0%, rgba(130, 70, 192, .13), transparent 80%),
+                linear-gradient(125deg, #2b2a36, #1c252d);
+  }
+  .results-icon { background: #363043; border-color: #655178; }
+  .results-lead { color: #c3cbd8; }
+  .result-chip { background: #20402d; border-color: #42764b; color: #a6e8b0; }
+  .result-chip.soft { background: #383046; border-color: #65517d; color: #e2d0fa; }
+  .score-ring { background: conic-gradient(#9c6be1 0 var(--score-percent), #454551 var(--score-percent) 100%); }
+  .score-ring-inner { background: #202833; }
+  .score-ring-inner span { color: #d5dce5; }
+  .score-ring-inner small { color: #c3acce; }
+  .result-stat, .confidence-panel { background: #202833; border-color: #434d59; }
+  .result-stat-label, .confidence-legend { color: #c9cbd5; }
+  .result-stat-help { color: #a5aebd; }
+  .result-stat strong.positive, .positive { color: #7bd784; }
+  .confidence-item { background: #28313b; border-color: #4b5562; }
+  .confidence-change, .confidence-bar-line > span { color: #b8c2ce; }
+  .confidence-bar-track { background: #414954; }
+  .legend-after, .confidence-bar.after { background: linear-gradient(90deg, #7839d1, #ae7fec); }
+  .results-disclaimer, .results-disclaimer span { color: #b6becb; }
+  
+  /* Completion screen: more specific selectors also work if Completion.css loads later */
+  .shell .completion-card {
+    border-color: #52465f;
+    background: radial-gradient(circle at 50% 0%, rgba(120, 57, 209, .12), transparent 48%),
+                linear-gradient(150deg, #272b36, #1c242c);
+  }
+  .shell .completion-check { color: #9ce5a2; background: #24412e; border-color: #4e8a56; }
+  .shell .completion-subtitle { color: #c5ceda; }
+  .shell .completion-details { border-color: #4a5360; background: #252e38; }
+  .shell .completion-detail-row + .completion-detail-row { border-top-color: #444d59; }
+  .shell .completion-detail-row span { color: #b5c0cf; }
+  .shell .completion-stage { background: #202a33; border-color: #47515e; }
+  .shell .completion-stage-check { color: #9ce5a2; background: #294c32; }
+  .shell .completion-return { background: linear-gradient(120deg, #8748db, #6c31ba); border-color: #b38af1; }
+  .shell .completion-return:focus-visible { outline-color: #b38af1; }
+  
